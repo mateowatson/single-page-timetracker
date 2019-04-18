@@ -1,0 +1,174 @@
+$sm: 576px;
+$md: 768px;
+$lg: 992px;
+
+@import "bootstrap/bootstrap";
+
+#app {
+	display: none;
+}
+
+.table-wrapper {
+	overflow-x: auto;
+}
+
+.table {
+	min-width: 960px;
+}
+
+th, td {
+	text-align: center;
+	vertical-align: middle;
+	width: auto;
+}
+
+.table-total {
+	text-align: right;
+}
+
+.select--main {
+	width: 100%;
+}
+
+.button--main {
+	width: 100%;
+	background-color: $green;
+	border: none;
+
+	&:hover {
+		background-color: $green;
+	}
+
+	&[disabled] {
+		background-color: lightgray;
+		opacity: 1;
+	}
+}
+
+.button--stop {
+	width: 100%;
+	background-color: $red;
+	border: none;
+
+	&:hover {
+		background-color: $red;
+	}
+
+	&[disabled] {
+		background-color: lightgray;
+		opacity: 1;
+	}
+}
+
+.select--main {
+	margin-bottom: 25px;
+}
+
+.timer {
+	min-height: 100px;
+
+	@media screen and (max-width: $md) {
+		> div {
+			margin-bottom: 1em;
+		}
+	}
+}
+
+.time-log-edit-view {
+	&__form {
+		position: fixed;
+		display: flex;
+		justify-content: center;
+		flex-direction: column;
+		align-items: center;
+		width: 100%;
+		height: 100vh;
+		top: 0;
+		left: 0;
+		background-color: rgba(0,0,0,.6);
+	}
+
+	&__field {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		width: 25%;
+		margin-bottom: 25px;
+
+		label {
+			color: white;
+		}
+	}
+}
+
+.app-head {
+	margin-top: 25px;
+	margin-bottom: 50px;
+
+	@media screen and (max-width: $md) {
+		margin-bottom: 25px;
+	}
+
+	h1 {
+		font-size: 16px;
+		font-weight: bold;
+	}
+}
+
+.search__input {
+	@media screen and (max-width: $md) {
+		margin-bottom: 1em;
+	}
+}
+
+.search-by {
+	position: relative;
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 25px;
+
+	&__label {
+		width: 50%;
+		text-align: right;
+		padding: 0 12px;
+	}
+
+	&__select {
+		width: 50%;
+	}
+}
+
+.import {
+	@media screen and (max-width: $md) {
+		margin-bottom: 1em;
+	}
+}
+
+.import-file-input {
+	display: block;
+	width: 100%;
+}
+
+.btn--secondary {
+	display: block;
+	width: 100%;
+	background-color: lightgray;
+}
+
+.import-file-input {
+	font-size: 11px;
+	margin-bottom: 12px;
+}
+
+.clear-table-buttons {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+
+	&__button {
+		width: calc(50% - 6px);
+	}
+}

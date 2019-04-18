@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Single Page Timetracker</title>
+	<link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+
+<div id="app">
+	<div class="container app-head">
+		<div class="row">
+			<div class="col-sm-12 col-md-6 col-lg-6">
+				<h1>Single Page Timetracker</h1>
+
+				<p>Logging time as: <input type="text" v-model="user" placeholder="Your Name"></p>
+			</div>
+
+			<div class="col-6 col-sm-3 col-md-2 col-lg-2 import">
+				<button class="btn btn--secondary" @click="showImportInput = true" v-show="showImportInput === false" :disabled="timerStarted">Import</button>
+				<input @change="setUploadedText" v-show="showImportInput" type="file" id="new-file" class="import-file-input" accept-charset="UTF-8" multiple>
+				<button v-show="showImportInput" @click="showImportInput = false" class="btn btn--secondary">Cancel Import</button>
+			</div>
+			
+			<div class="col-6 col-sm-3 col-md-2 col-lg-2 export">
+				<button class="btn btn--secondary" @click="exportLogs" :disabled="timerStarted || !store.timeLogs.length">Export</button>
+			</div>
+			
+			<div class="col-6 col-sm-3 col-md-2 col-lg-2 clear-table">
+				<button class="btn btn--secondary" @click="showClearTable" :disabled="timerStarted || !store.timeLogs.length">Clear Table</button>
+				<div class="clear-table-dialog" v-show="showClearTableDialog">
+					<p>Are you sure? Non-exported data will be lost.</p>
+					<div class="clear-table-buttons">
+						<button @click="clearTable" class="btn btn--secondary clear-table-buttons__button">Yes</button>
+						<button @click="hideClearTable" class="btn btn--secondary clear-table-buttons__button">No</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+
+	<div class="container">
+		<div class="row timer">
+			<div class="col-md-4 col-lg-3">
+				<input
+					type="text"
+					class="form-control w-100"
+					placeholder="Project"
+					v-model="project">
+				
+			</div>
+
+			<div class="col-md-4 col-lg-3">
+				<input
+					type="text"
+					class="form-control w-100"
+					placeholder="Task"
+					v-model="task">
+			</div>
+
+			<div class="col-md-2 col-lg-2">
+			<button id="start-timer" @click="start" :disabled="timerStarted" class="btn btn-primary button--main">Start</button>
+			</div>
+
+			<div class="col-md-2 col-lg-2">
+				<button id="stop-timer" @click="stop" :disabled="!timerStarted" class="btn btn-primary button--stop">Stop</button>
+			</div>
+		</div>
+
+		<div class="row search">
+			<div class="col-sm-12 col-md-4 offset-md-4">
+				<input
+					type="text"
+					class="form-control search__input"
+					placeholder="Search..."
+					v-model="storeSearchTerm">
+			</div>
+			<div class="col-10 col-sm-7 offset-sm-2 col-md-4 offset-md-0 search-by">
+				<label for="search-by" class="search-by__label">Search by:</label>
+				<select v-model="searchBy" class="form-control search-by__select" id="search-by">
+					<option value="project">Project</option>
+					<option value="task">Task</option>
+					<option value="date">Date</option>
+				</select>
+			</div>
+				
+			<div class="col-sm-12 table-wrapper">
+				<table class="table table-striped">
+					<thead>
+						<tr>
+							<th class="logcol--user">User</th>
+							<th class="logcol--project">Project</th>
+							<th class="logcol--task">Task</th>
+							<th class="logcol--notes">Notes</th>
+							<th class="logcol--started">Time Started</th>
+							<th class="logcol--ended">Time Ended</th>
+							<th class="logcol--total">Time Logged</th>
+						</tr>
+						<tr>
+							<th class="table-total" colspan="6">Total</th>
+							<th>{{ timeSum }}</th>
+						</tr>
+					</thead>
+					<tbody v-if="timeLogsReverseOrder.length">
+						<tr v-for="timeLog in timeLogsReverseOrder">
+							<td class="logcol--user">
+								<a @click.prevent="showTimeLogEdit(timeLog)" href="#" class="time-log-edit">Edit</a>
+								{{ timeLog.user }}</td>
+							<td class="logcol--project">{{ timeLog.project }}</td>
+							<td class="logcol--task">{{ timeLog.task }}</td>
+							<td class="logcol--notes">{{ timeLog.notes }}</td>
+							<td class="logcol--started">{{ formatTime(timeLog.startTime) }}</td>
+							<td class="logcol--ended">{{ timeLog.endTime ? displayEndTime(timeLog) : '--' }}</td>
+							<td class="logcol--total">{{ timeLog.endTime ? getDuration(timeLog.startTime, timeLog.endTime) : '00:00:00' }}</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<div v-if="timeLogEdit.guid" class="time-log-edit-view">
+					<form class="time-log-edit-view__form" @submit.prevent="submitTimeLogEdit" action="">
+
+						<div class="time-log-edit-view__field">
+							<label for="timelogedituser">User: </label>
+							<input type="text" v-model="timeLogEdit.user">
+						</div>
+
+						<div class="time-log-edit-view__field">
+							<label for="timelogeditproject">Project: </label>
+							<input type="text" v-model="timeLogEdit.project">
+						</div>
+
+						<div class="time-log-edit-view__field">
+							<label for="timelogedittask">Task: </label>
+							<input type="text" v-model="timeLogEdit.task">
+						</div>
+
+						<div class="time-log-edit-view__field">
+							<label for="timelogeditnotes">Notes: </label>
+							<input type="text" v-model="timeLogEdit.notes">
+						</div>
+						
+						<div class="time-log-edit-view__field">
+							<label for="timelogeditstarttime">Start Time: </label>
+							<input type="text" v-model="newStartTimeFormatted">
+						</div>
+						
+						<div class="time-log-edit-view__field">
+							<label for="timelogeditendtime">End Time: </label>
+							<input type="text" v-model="newEndTimeFormatted">
+						</div>
+
+						<div class="time-log-edit-view__field">
+							<input class="btn btn-primary" type="submit" value="Update">
+							<button @click.prevent="resetTimeLogEdit" class="btn">Cancel</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>
+<script src="/assets/manifest.js"></script>
+<script src="/assets/vendor.js"></script>
+<script src="/assets/app.js"></script>
+</body>
+</html>
